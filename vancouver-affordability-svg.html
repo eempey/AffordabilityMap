@@ -2200,7 +2200,6 @@
 </svg>
 
 	<script> 
-	var dataset;
 
 	function dataToId(tractNumber){
 		var tractNumber = tractNumber.replace('.','');
@@ -2213,24 +2212,32 @@
 
 	d3.csv('shelter-by-tract.csv', function(data){
 
-		data.forEach(function(d) {
+		/*data.forEach(function(d) {
   			d.amount = +d.amount;
 		});
 
-		max = d3.max(data, function(d){
+		var max = d3.max(data, function(d){
 			return d.amount;
-		});
+		});*/
+
+		//console.log(max);
 
 		data.forEach(function(d){
+			d.amount = +d.amount;
 			var fillColor;
-			if(d.amount == 0){
-				fillColor = 0;
-			}else{
-				fillColor = parseInt(d.amount/max*255);
-			}
+
+			var max = d3.max(data, function(d){
+			return d.amount;
+			});
+
+			s = d3.scale.linear()
+				  .domain([0,max])
+				  .interpolate(d3.interpolateRgb)
+				  .range(["#f9cfd1", "#fd000c"]);
 
 			d3.select(dataToId(d.tract))			
-					.attr("fill","rgb(0, "+(255 - fillColor)+"," + (255 - fillColor) +")")
+					//.attr("fill","rgb(0, "+(255 - fillColor)+"," + (255 - fillColor) +")")
+					.attr("fill",s(d.amount))
 					.on("mouseover", function(){
 						d3.select("#tooltip")
 						.style("left", '80px')
@@ -2239,42 +2246,12 @@
 						.text(d.amount);
 
 						d3.select("#tooltip")
-						.classed("hidden",false)
+						.classed("hidden",false);
 					})
 					.on("mouseout", function(){
 						d3.select("#tooltip").classed("hidden", true);
 					});
-
 		});
-
-/*		var fillColor;
-		
-		for(line in data){
-			var amount = data[line]["amount"];
-			
-			if(amount < 500){
-				fillColor = "#a8e9a4";
-			}else if(amount > 499 && amount <= 700){
-				fillColor = "#1a824b";
-			}else if(amount > 700 && amount <= 900){
-				fillColor = "#f7df40";
-			}else if(amount > 900 && amount <= 1100){
-				fillColor = "#BC7421";
-			}else if(amount > 1100 && amount <= 1300){
-				fillColor = "#123456";
-			}else if(amount > 1300 && amount <= 1500){
-				fillColor = "#006655";
-			}else if(amount > 1700 && amount <= 1900){
-				fillColor = "#7845aa";
-			}else if(amount > 2100 && amount <= 2300){
-				fillColor = "#666600";
-			}else if(amount > 2300){
-				fillColor = "#dd0000";
-			} 
-
-			d3.select(dataToId(data[line]["tract"]))			
-				.attr("fill","rgb(0,0,130)");
-		}*/
 	});
 
 	//d3.behaviour.zoom('svg');
