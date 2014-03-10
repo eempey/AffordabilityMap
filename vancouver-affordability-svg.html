@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <head>
-	<link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" type="text/css" href="style-svg.css" />
 	<title>Vancouver Housing Affordability</title>
 </head>
 <body>
@@ -2212,19 +2212,8 @@
 
 	d3.csv('shelter-by-tract.csv', function(data){
 
-		/*data.forEach(function(d) {
-  			d.amount = +d.amount;
-		});
-
-		var max = d3.max(data, function(d){
-			return d.amount;
-		});*/
-
-		//console.log(max);
-
 		data.forEach(function(d){
 			d.amount = +d.amount;
-			var fillColor;
 
 			var max = d3.max(data, function(d){
 			return d.amount;
@@ -2236,7 +2225,6 @@
 				  .range(["#f9cfd1", "#fd000c"]);
 
 			d3.select(dataToId(d.tract))			
-					//.attr("fill","rgb(0, "+(255 - fillColor)+"," + (255 - fillColor) +")")
 					.attr("fill",s(d.amount))
 					.on("mouseover", function(){
 						d3.select("#tooltip")
