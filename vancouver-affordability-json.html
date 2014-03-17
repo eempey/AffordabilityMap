@@ -2,11 +2,11 @@
 <html>
 <head>
 	<link rel="stylesheet" type="text/css" href="style-json.css" />
+
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 	<title>Vancouver Housing Affordability</title>
 </head>
 <body>
-	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-	
 	
 	<h1>Vancouver Affordability</h1>
 	<p>Average monthly cost of housing (mortgage or rent) in Vancouver, according to 2011 National Housing Survey (Statistics Canada)</p>
@@ -86,6 +86,8 @@
 			var b = path.bounds(json),
 		    s = .95 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
 		    t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+		    console.log(s);
+		    console.log(t);
 
 			// Update the projection to use computed scale & translate.
 			projection

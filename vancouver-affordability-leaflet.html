@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Vancouver Housing Affordability</title>
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" />
+	<link rel="stylesheet" type="text/css" href="style-leaflet.css" />
+
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+</head>
+<body>
+	<h1>Vancouver Affordability</h1>
+	<p>Average monthly cost of housing (mortgage or rent) in Vancouver, according to 2011 National Housing Survey (Statistics Canada)</p>
+  <div id="tooltip" class="hidden">
+      <h2>Average monthly cost of housing</h2>
+      <p>$<span id="value"></span></p>
+      <p id="mouse"></p>
+    </div>
+    <!-- <button id="twentyeleven" type="button">2011</button>
+    <button id="twentysix" type="button">2006</button>
+    <button id="difference" type="button">Difference</button> -->
+<div id="map"></div>
+
+<script>
+	var map = new L.Map("map", {center: [49.26, -123.15], zoom: 12});
+
+	L.tileLayer('http://{s}.tile.cloudmade.com/1b898cad67854b34aaa2e9918af4d397/998/256/{z}/{x}/{y}.png', {
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+    maxZoom: 18
+}).addTo(map);
+
+var svg = d3.select(map.getPanes().overlayPane).append("svg"),
+    g = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+  
+d3.csv('shelter-by-tract.csv', function(data){
+
+  var max = d3.max(data, function(d){
+      return +d.amount2011;
+      });
+
+    var color = d3.scale.linear()
+      .domain([0,max])
+      .interpolate(d3.interpolateRgb)
+      .range(["#f9cfd1", "#fd000c"]);
+
+  d3.json("census-tracts-2011.json", function(collection) {
+    for(var i =0; i<data.length; i++){
+        var csvGeoCode = data[i].GeoCode;
+
+        var amount = parseFloat(data[i].amount2011);
+
+        for(var j=0; j<collection.features.length; j++){
+          var jsonGeoCode = collection.features[j].properties.CTUID;
+        
+          if(csvGeoCode == jsonGeoCode){
+            collection.features[j].properties.amount = amount;
+            break;
+
+          }
+
+        }
+      }
+
+    var transform = d3.geo.transform({point: projectPoint}),
+        path = d3.geo.path().projection(transform);
+
+    var feature = g.selectAll("path")
+        .data(collection.features)
+        .enter()
+        .append("path")
+        .attr("d",path)
+        .style("fill", function(d){
+          var value = d.properties.amount;
+            if(value){
+              return color(value);
+            }
+          })
+        .on("mouseover", function(d){
+            var x = d3.event.clientX - 250;
+            var y = d3.event.clientY - 50;
+
+
+            
+            d3.select("#tooltip")
+            .style("left", x +'px')
+            .style("top", y + 'px')
+            .classed("hidden",false)
+            .select("#value")
+            .text(d.properties.amount);           
+          })
+        .on("mouseout", function(){
+            d3.select("#tooltip").classed("hidden", true);
+        });
+
+    map.on("viewreset", reset);
+    reset();
+
+  // Reposition the SVG to cover the features.
+    function reset() {
+      var bounds = path.bounds(collection),
+          topLeft = bounds[0],
+          bottomRight = bounds[1];
+
+      svg .attr("width", bottomRight[0] - topLeft[0])
+          .attr("height", bottomRight[1] - topLeft[1])
+          .style("left", topLeft[0] + "px")
+          .style("top", topLeft[1] + "px");
+
+      g .attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+
+      feature.attr("d", path);
+    }
+
+    // Use Leaflet to implement a D3 geometric transformation.
+    function projectPoint(x, y) {
+      var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+      this.stream.point(point.x, point.y);
+    }        
+
+  });
+});
+
+
+
+</script>	
+</body>
+</html>
